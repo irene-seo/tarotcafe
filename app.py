@@ -47,10 +47,10 @@ TAROT_CARDS = [
 ]
 
 MBTI_LIST = [
-    "INTJ", "INTP", "ENTJ", "ENTP",
-    "INFJ", "INFP", "ENFJ", "ENFP",
-    "ISTJ", "ISFJ", "ESTJ", "ESFJ",
-    "ISTP", "ISFP", "ESTP", "ESFP"
+    "INFJ", "INFP", "INTJ", "INTP",
+    "ISFJ", "ISFP", "ISTJ", "ISTP",
+    "ENFJ", "ENFP", "ENTJ", "ENTP",
+    "ESFJ", "ESFP", "ESTJ", "ESTP"
 ]
 
 # CSS에 춘식이 이미지 삽입 (replace 방식으로 f-string 충돌 방지)
