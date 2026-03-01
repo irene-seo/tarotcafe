@@ -210,7 +210,8 @@ if not st.session_state.card_drawn:
         unsafe_allow_html=True
     )
 
-    if st.button("🔮 타로카드 뽑기!"):
+    _, col, _ = st.columns([1, 2, 1])
+    if col.button("🔮 타로카드 뽑기!"):
         if not name or mbti == "선택해주세요":
             st.warning("이름과 MBTI를 먼저 입력해주세요 🙏")
         else:
@@ -273,7 +274,8 @@ if st.session_state.card_drawn and st.session_state.selected_card:
     )
 
     st.divider()
-    if st.button("🔄 다시 뽑기"):
+    _, col2, _ = st.columns([1, 2, 1])
+    if col2.button("🔄 다시 뽑기"):
         st.session_state.card_drawn = False
         st.session_state.selected_card = None
         st.session_state.fortune_result = None
