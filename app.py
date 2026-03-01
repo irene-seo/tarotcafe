@@ -133,14 +133,13 @@ css = """
 
     .card-back {
         background: linear-gradient(135deg, #1a0818, #2d1030);
-        border: 2px solid rgba(255, 215, 0, 0.5);
+        border: 2px solid rgba(255, 215, 0, 0.6);
         border-radius: 24px;
-        padding: 3rem 1rem;
+        padding: 1.8rem 1rem;
         text-align: center;
-        font-size: 4.5rem;
         margin: 1rem auto;
         max-width: 200px;
-        box-shadow: 0 0 30px rgba(232, 160, 168, 0.2), 0 8px 24px rgba(0,0,0,0.5);
+        box-shadow: 0 0 30px rgba(232, 160, 168, 0.25), 0 0 60px rgba(255,215,0,0.1), 0 8px 24px rgba(0,0,0,0.5);
     }
 
     .tarot-card {
@@ -203,7 +202,15 @@ for key in ["card_drawn", "selected_card", "fortune_result"]:
 
 # 카드 뽑기 전
 if not st.session_state.card_drawn:
-    st.markdown("<div class='card-back'>🎴</div>", unsafe_allow_html=True)
+    st.markdown(
+        "<div class='card-back'>"
+        "<div style='font-size:0.6rem; color:#FFD700; letter-spacing:5px; margin-bottom:0.8rem;'>✦ ✦ ✦ ✦ ✦</div>"
+        f"<img src='data:image/png;base64,{chunsik_b64}' style='width:90px; height:90px; object-fit:contain;'/>"
+        "<div style='font-size:0.55rem; color:#e8a0a8; margin-top:0.8rem; letter-spacing:2px;'>✨ 춘식이의 타로카페 ✨</div>"
+        "<div style='font-size:0.6rem; color:#FFD700; letter-spacing:5px; margin-top:0.5rem;'>✦ ✦ ✦ ✦ ✦</div>"
+        "</div>",
+        unsafe_allow_html=True
+    )
     st.markdown(
         "<p style='text-align:center; color:#c9a96e; margin-top:0.5rem;'>"
         "카드가 당신을 기다리고 있어요...</p>",
