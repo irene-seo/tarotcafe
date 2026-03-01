@@ -218,7 +218,7 @@ if not st.session_state.card_drawn:
     )
 
     _, col, _ = st.columns([1, 2, 1])
-    if col.button("🔮 타로카드 뽑기!", use_container_width=True):
+    if col.button("🔮 타로카드 뽑기! 🔮", use_container_width=True):
         if not name or mbti == "선택해주세요":
             st.warning("이름과 MBTI를 먼저 입력해주세요 🙏")
         else:
