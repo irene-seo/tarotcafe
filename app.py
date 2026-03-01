@@ -107,6 +107,10 @@ css = """
         border-radius: 10px !important;
     }
 
+    .stButton {
+        display: flex !important;
+        justify-content: center !important;
+    }
     .stButton > button {
         background: linear-gradient(135deg, #c9a96e, #FFD700) !important;
         color: white !important;
