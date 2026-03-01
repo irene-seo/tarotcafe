@@ -107,17 +107,24 @@ css = """
         border-radius: 10px !important;
     }
 
-    .stButton > button,
-    .stButton > button * {
+    .stButton > button {
         background: linear-gradient(135deg, #c9a96e, #FFD700) !important;
-        color: #0a0a0a !important;
+        color: white !important;
         border: none !important;
         border-radius: 16px !important;
         font-weight: 900 !important;
         font-size: 1.1rem !important;
-        padding: 0.7rem 2rem !important;
-        width: 100% !important;
+        padding: 0.6rem 1.5rem !important;
+        width: auto !important;
+        min-width: 60% !important;
+        display: block !important;
+        margin: 0 auto !important;
         box-shadow: 0 4px 20px rgba(255, 215, 0, 0.4);
+        text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    }
+    .stButton > button * {
+        color: white !important;
+        background: transparent !important;
     }
 
     .card-back {
