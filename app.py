@@ -241,6 +241,8 @@ for key in ["card_drawn", "selected_card", "fortune_result"]:
         st.session_state[key] = False if key == "card_drawn" else None
 if "gallery" not in st.session_state:
     st.session_state.gallery = []
+if "just_saved" not in st.session_state:
+    st.session_state.just_saved = False
 
 # 카드 뽑기 전
 if not st.session_state.card_drawn:
@@ -348,6 +350,32 @@ if st.session_state.card_drawn and st.session_state.selected_card:
 
     st.divider()
 
+    # 저장 직후 풍선 + 알림
+    if st.session_state.just_saved:
+        st.balloons()
+        st.markdown(
+            "<div style='background:rgba(255,215,0,0.15); border:1px solid #FFD700; "
+            "border-radius:12px; padding:0.8rem 1rem; text-align:center; color:#FFD700; "
+            "font-weight:bold; margin-bottom:0.5rem;'>"
+            "✨ 갤러리에 저장됐어요! 아래에서 확인하세요 ✨</div>",
+            unsafe_allow_html=True
+        )
+        st.session_state.just_saved = False
+
+    # 갤러리 섹션 (버튼 위)
+    if st.session_state.gallery:
+        st.divider()
+        st.subheader("✨ 오늘의 운세 갤러리")
+        for i, item in enumerate(reversed(st.session_state.gallery)):
+            st.markdown(
+                f"<div class='gallery-card'>"
+                f"<div class='gallery-card-title'>{item['emoji']} {item['name']} ({item['mbti']}) · {item['card']} 카드</div>"
+                f"{item['result']}"
+                f"</div>",
+                unsafe_allow_html=True
+            )
+        st.divider()
+
     col1, col2 = st.columns(2)
     # 갤러리 저장 버튼
     if col1.button("📸 갤러리에 저장!", use_container_width=True):
@@ -358,7 +386,8 @@ if st.session_state.card_drawn and st.session_state.selected_card:
             "emoji": card["emoji"],
             "result": st.session_state.fortune_result
         })
-        st.success("갤러리에 저장됐어요! 🌟")
+        st.session_state.just_saved = True
+        st.rerun()
 
     # 다시 뽑기 버튼
     if col2.button("🔄 다시 뽑기", use_container_width=True):
@@ -366,16 +395,3 @@ if st.session_state.card_drawn and st.session_state.selected_card:
         st.session_state.selected_card = None
         st.session_state.fortune_result = None
         st.rerun()
-
-# 갤러리 섹션
-if st.session_state.gallery:
-    st.divider()
-    st.subheader("✨ 오늘의 운세 갤러리")
-    for i, item in enumerate(reversed(st.session_state.gallery)):
-        st.markdown(
-            f"<div class='gallery-card'>"
-            f"<div class='gallery-card-title'>{item['emoji']} {item['name']} ({item['mbti']}) · {item['card']} 카드</div>"
-            f"{item['result']}"
-            f"</div>",
-            unsafe_allow_html=True
-        )
