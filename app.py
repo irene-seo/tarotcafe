@@ -101,9 +101,9 @@ css = """
     }
 
     .stTextInput input, .stSelectbox select {
-        background: rgba(255,255,255,0.05) !important;
-        color: #f5f5f5 !important;
-        border: 1px solid rgba(255, 215, 0, 0.3) !important;
+        background: rgba(255,255,255,0.92) !important;
+        color: #1a0818 !important;
+        border: 1px solid rgba(255, 215, 0, 0.5) !important;
         border-radius: 10px !important;
     }
 
@@ -242,9 +242,10 @@ if not st.session_state.card_drawn:
                     "아래 정보를 바탕으로 오늘의 운세를 따뜻하고 공감 가는 한국어로 알려주세요.\n\n"
                     f"이름: {name}\n"
                     f"MBTI: {mbti}\n"
-                    f"뽑힌 타로카드: {card['name']} ({card['english']})\n\n"
+                    f"뽑힌 타로카드: {card['name']}\n\n"
                     "작성 규칙:\n"
-                    "- 반드시 한국어로만! 영어 절대 금지!\n"
+                    "- 오직 한국어로만 작성! 영어, 로마자, 외국어 단어 절대 사용 금지!\n"
+                    "- 카드 이름도 영어로 쓰지 말고 한국어로만!\n"
                     "- 귀엽고 따뜻한 말투로 (존댓말)\n"
                     f"- 오늘의 총운: 3~4문장으로 카드의 의미를 {name}님의 하루에 연결해서\n"
                     f"- {mbti} 성격 특성을 자연스럽게 반영\n"
