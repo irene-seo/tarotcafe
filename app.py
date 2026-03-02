@@ -370,20 +370,6 @@ if st.session_state.card_drawn and st.session_state.selected_card:
         )
         st.session_state.just_saved = False
 
-    # 갤러리 섹션 (버튼 위)
-    if st.session_state.gallery:
-        st.divider()
-        st.subheader("✨ 오늘의 운세 갤러리")
-        for i, item in enumerate(reversed(st.session_state.gallery)):
-            st.markdown(
-                f"<div class='gallery-card'>"
-                f"<div class='gallery-card-title'>{item['emoji']} {item['name']} ({item['mbti']}) · {item['card']} 카드</div>"
-                f"{item['result']}"
-                f"</div>",
-                unsafe_allow_html=True
-            )
-        st.divider()
-
     col1, col2 = st.columns(2)
     # 갤러리 저장 버튼
     if col1.button("📸 갤러리에 저장!", use_container_width=True):
@@ -404,3 +390,17 @@ if st.session_state.card_drawn and st.session_state.selected_card:
         st.session_state.selected_card = None
         st.session_state.fortune_result = None
         st.rerun()
+
+# 갤러리 섹션 (항상 표시 - if card_drawn 밖!)
+if st.session_state.gallery:
+    st.divider()
+    st.subheader("✨ 오늘의 운세 갤러리")
+    for i, item in enumerate(reversed(st.session_state.gallery)):
+        st.markdown(
+            f"<div class='gallery-card'>"
+            f"<div class='gallery-card-title'>{item['emoji']} {item['name']} ({item['mbti']}) · {item['card']} 카드</div>"
+            f"{item['result']}"
+            f"</div>",
+            unsafe_allow_html=True
+        )
+    st.divider()
