@@ -284,6 +284,8 @@ if not st.session_state.card_drawn:
 
             card = random.choice(TAROT_CARDS)
             st.session_state.selected_card = card
+            st.session_state.user_name = name
+            st.session_state.user_mbti = mbti
 
             with st.spinner("춘식이가 카드를 읽는 중... 🐱"):
                 prompt = (
@@ -386,8 +388,8 @@ if st.session_state.card_drawn and st.session_state.selected_card:
     # 갤러리 저장 버튼
     if col1.button("📸 갤러리에 저장!", use_container_width=True):
         st.session_state.gallery.append({
-            "name": name,
-            "mbti": mbti,
+            "name": st.session_state.get("user_name", ""),
+            "mbti": st.session_state.get("user_mbti", ""),
             "card": card["name"],
             "emoji": card["emoji"],
             "result": st.session_state.fortune_result
