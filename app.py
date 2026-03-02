@@ -186,24 +186,8 @@ css = """
         line-height: 1.9;
     }
 
-    .gallery-card {
-        background: rgba(25, 10, 25, 0.8);
-        border: 1px solid rgba(255, 215, 0, 0.3);
-        border-radius: 16px;
-        padding: 1rem;
-        margin: 0.7rem 0;
-        color: #f0e8f0;
-        font-size: 0.9rem;
-        line-height: 1.7;
-    }
-    .gallery-card-title {
-        color: #FFD700;
-        font-weight: bold;
-        font-size: 1rem;
-        margin-bottom: 0.5rem;
-    }
 
-    hr { border-color: rgba(255, 215, 0, 0.3) !important; }
+hr { border-color: rgba(255, 215, 0, 0.3) !important; }
     header[data-testid="stHeader"],
     [data-testid="stToolbar"] { display: none !important; }
 
@@ -244,18 +228,6 @@ st.divider()
 for key in ["card_drawn", "selected_card", "fortune_result"]:
     if key not in st.session_state:
         st.session_state[key] = False if key == "card_drawn" else None
-if "gallery" not in st.session_state:
-    st.session_state.gallery = []
-if "just_saved" not in st.session_state:
-    st.session_state.just_saved = False
-
-# 🐛 디버그 패널
-with st.expander("🐛 디버그 (개발용)", expanded=False):
-    st.write(f"card_drawn: {st.session_state.card_drawn}")
-    st.write(f"just_saved: {st.session_state.just_saved}")
-    st.write(f"gallery 개수: {len(st.session_state.gallery)}")
-    st.write(f"user_name: {st.session_state.get('user_name', '없음')}")
-    st.write(f"user_mbti: {st.session_state.get('user_mbti', '없음')}")
 
 # 카드 뽑기 전
 if not st.session_state.card_drawn:
@@ -293,8 +265,6 @@ if not st.session_state.card_drawn:
             random.seed()
             card = random.choice(TAROT_CARDS)
             st.session_state.selected_card = card
-            st.session_state.user_name = name
-            st.session_state.user_mbti = mbti
 
             with st.spinner("춘식이가 카드를 읽는 중... 🐱"):
                 prompt = (
@@ -369,49 +339,9 @@ if st.session_state.card_drawn and st.session_state.selected_card:
 
     st.divider()
 
-    # 저장 직후 풍선 + 알림
-    if st.session_state.just_saved:
-        st.balloons()
-        st.markdown(
-            "<div style='background:rgba(255,215,0,0.15); border:1px solid #FFD700; "
-            "border-radius:12px; padding:0.8rem 1rem; text-align:center; color:#FFD700; "
-            "font-weight:bold; margin-bottom:0.5rem;'>"
-            "✨ 갤러리에 저장됐어요! 아래에서 확인하세요 ✨</div>",
-            unsafe_allow_html=True
-        )
-        st.session_state.just_saved = False
-
-    col1, col2 = st.columns(2)
-    # 갤러리 저장 버튼
-    if col1.button("📸 갤러리에 저장!", use_container_width=True):
-        new_item = {
-            "name": st.session_state.get("user_name", ""),
-            "mbti": st.session_state.get("user_mbti", ""),
-            "card": card["name"],
-            "emoji": card["emoji"],
-            "result": st.session_state.fortune_result
-        }
-        st.session_state.gallery = st.session_state.gallery + [new_item]
-        st.session_state.just_saved = True
-        st.rerun()
-
-    # 다시 뽑기 버튼
-    if col2.button("🔄 다시 뽑기", use_container_width=True):
+    _, col, _ = st.columns([1, 2, 1])
+    if col.button("🔄 다시 뽑기", use_container_width=True):
         st.session_state.card_drawn = False
         st.session_state.selected_card = None
         st.session_state.fortune_result = None
         st.rerun()
-
-# 갤러리 섹션 (항상 표시 - if card_drawn 밖!)
-if st.session_state.gallery:
-    st.divider()
-    st.subheader("✨ 오늘의 운세 갤러리")
-    for i, item in enumerate(reversed(st.session_state.gallery)):
-        st.markdown(
-            f"<div class='gallery-card'>"
-            f"<div class='gallery-card-title'>{item['emoji']} {item['name']} ({item['mbti']}) · {item['card']} 카드</div>"
-            f"{item['result']}"
-            f"</div>",
-            unsafe_allow_html=True
-        )
-    st.divider()
