@@ -25,9 +25,9 @@ chunsik_b64 = get_base64_image("chunsik.png.png")
 MBTI_PATTERN = r'\b(INFJ|INFP|INTJ|INTP|ISFJ|ISFP|ISTJ|ISTP|ENFJ|ENFP|ENTJ|ENTP|ESFJ|ESFP|ESTJ|ESTP)\b'
 
 def has_foreign_text(text):
-    """MBTI 약어 제외하고 외국어(알파벳 3글자 이상, 한자, 일본어) 있으면 True"""
+    """MBTI 약어 제외하고 외국어(알파벳 2글자 이상, 한자, 일본어) 있으면 True"""
     cleaned = re.sub(MBTI_PATTERN, '', text)
-    if re.search(r'[a-zA-Z]{3,}', cleaned):
+    if re.search(r'[a-zA-Z]{2,}', cleaned):
         return True
     # 한자(CJK), 일본어 히라가나/가타카나 감지
     if re.search(r'[\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff]', cleaned):
@@ -282,6 +282,7 @@ if not st.session_state.card_drawn:
                 time.sleep(0.13)
             placeholder.empty()
 
+            random.seed()
             card = random.choice(TAROT_CARDS)
             st.session_state.selected_card = card
             st.session_state.user_name = name
@@ -310,11 +311,13 @@ if not st.session_state.card_drawn:
                     "영어, 독일어, 프랑스어, 일본어, 중국어, 한자(漢字), 스페인어, 이탈리아어 등 "
                     "모든 외국어 단어와 문자는 절대 사용하면 안 됩니다. "
                     "한자(예: 愛, 運, 幸 등)도 절대 사용 금지입니다. "
+                    "한국어 이름이나 단어를 로마자로 표기하는 것도 절대 금지입니다. "
+                    "예를 들어 'chun식', 'Chunsik', 'tarot' 같은 혼용은 절대 안 됩니다. "
                     "MBTI 약어(예: INFJ, ENFP)와 이모지만 예외로 허용됩니다. "
                     "반드시 순수한 한국어 단어로만 작성하세요."
                 )
                 fortune_result = None
-                for _ in range(3):
+                for _ in range(5):
                     response = client.chat.completions.create(
                         model="llama-3.3-70b-versatile",
                         messages=[
