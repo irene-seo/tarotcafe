@@ -249,6 +249,14 @@ if "gallery" not in st.session_state:
 if "just_saved" not in st.session_state:
     st.session_state.just_saved = False
 
+# 🐛 디버그 패널
+with st.expander("🐛 디버그 (개발용)", expanded=False):
+    st.write(f"card_drawn: {st.session_state.card_drawn}")
+    st.write(f"just_saved: {st.session_state.just_saved}")
+    st.write(f"gallery 개수: {len(st.session_state.gallery)}")
+    st.write(f"user_name: {st.session_state.get('user_name', '없음')}")
+    st.write(f"user_mbti: {st.session_state.get('user_mbti', '없음')}")
+
 # 카드 뽑기 전
 if not st.session_state.card_drawn:
     st.markdown(
