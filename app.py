@@ -3,6 +3,7 @@ import os
 import base64
 import random
 import time
+import re
 from groq import Groq
 from dotenv import load_dotenv
 
@@ -20,6 +21,13 @@ def get_base64_image(path):
         return base64.b64encode(f.read()).decode()
 
 chunsik_b64 = get_base64_image("chunsik.png.png")
+
+MBTI_PATTERN = r'\b(INFJ|INFP|INTJ|INTP|ISFJ|ISFP|ISTJ|ISTP|ENFJ|ENFP|ENTJ|ENTP|ESFJ|ESFP|ESTJ|ESTP)\b'
+
+def has_foreign_text(text):
+    """MBTI 약어 제외하고 외국어(알파벳 3글자 이상) 있으면 True"""
+    cleaned = re.sub(MBTI_PATTERN, '', text)
+    return bool(re.search(r'[a-zA-Z]{3,}', cleaned))
 
 # 카드마다 춘식이 색상 필터 다르게!
 TAROT_CARDS = [
@@ -288,16 +296,29 @@ if not st.session_state.card_drawn:
                     "- 너무 무겁거나 부정적이지 않게, 희망적이고 따뜻하게!"
                 )
 
-                response = client.chat.completions.create(
-                    model="llama-3.3-70b-versatile",
-                    messages=[
-                        {"role": "system", "content": "당신은 오직 한국어만으로 대화하는 타로 리더입니다. 영어 단어, 로마자 알파벳, 일본어, 한자 등 외국어는 절대로 사용하면 안 됩니다. MBTI 약어(예: INFJ, ENFP)와 이모지만 예외로 허용됩니다. 만약 외국어가 포함되면 실패한 답변입니다."},
-                        {"role": "user", "content": prompt}
-                    ],
-                    max_tokens=500,
-                    temperature=0.7
+                system_msg = (
+                    "당신은 오직 한국어만으로 대화하는 타로 리더입니다. "
+                    "영어, 독일어, 프랑스어, 일본어, 한자, 스페인어 등 "
+                    "모든 외국어 단어는 절대 사용하면 안 됩니다. "
+                    "MBTI 약어(예: INFJ, ENFP)와 이모지만 예외로 허용됩니다. "
+                    "반드시 한국어 단어로만 작성하세요."
                 )
-                st.session_state.fortune_result = response.choices[0].message.content
+                fortune_result = None
+                for _ in range(3):
+                    response = client.chat.completions.create(
+                        model="llama-3.3-70b-versatile",
+                        messages=[
+                            {"role": "system", "content": system_msg},
+                            {"role": "user", "content": prompt}
+                        ],
+                        max_tokens=500,
+                        temperature=0.6
+                    )
+                    result = response.choices[0].message.content
+                    if not has_foreign_text(result):
+                        fortune_result = result
+                        break
+                st.session_state.fortune_result = fortune_result or result
 
             st.session_state.card_drawn = True
             st.rerun()
