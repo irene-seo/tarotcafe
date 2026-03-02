@@ -5,7 +5,9 @@ import random
 import time
 import re
 import io
+import numpy as np
 from PIL import Image, ImageDraw, ImageFont
+from pilmoji import Pilmoji
 from groq import Groq
 from dotenv import load_dotenv
 
@@ -38,28 +40,79 @@ def has_foreign_text(text):
 
 def get_font(size):
     """한글 지원 폰트 찾기"""
-    paths = [
+    for path in [
         "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
         "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
         "/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc",
         "C:/Windows/Fonts/malgun.ttf",
-    ]
-    for path in paths:
+    ]:
         try:
             return ImageFont.truetype(path, size)
         except:
             pass
     return ImageFont.load_default()
 
+def hue_rotate(rgb, degrees):
+    """numpy RGB 배열 색조 회전"""
+    r, g, b = rgb[:,:,0], rgb[:,:,1], rgb[:,:,2]
+    max_c = np.maximum(np.maximum(r, g), b)
+    min_c = np.minimum(np.minimum(r, g), b)
+    delta = max_c - min_c + 1e-8
+    h = np.where(max_c == r, 60*(((g-b)/delta)%6),
+        np.where(max_c == g, 60*((b-r)/delta+2), 60*((r-g)/delta+4)))
+    h = (h + degrees) % 360
+    s = np.where(max_c > 1e-8, (max_c - min_c) / max_c, 0)
+    v = max_c
+    c = v * s
+    x = c * (1 - np.abs((h/60) % 2 - 1))
+    m = v - c
+    i = (h / 60).astype(int) % 6
+    ro = np.choose(i, [c,x,0,0,x,c]) + m
+    go = np.choose(i, [x,c,c,x,0,0]) + m
+    bo = np.choose(i, [0,0,x,c,c,x]) + m
+    return np.clip(np.stack([ro,go,bo], axis=2), 0, 1)
+
+def apply_css_filter(pil_img, filter_str):
+    """CSS filter를 PIL 이미지에 적용"""
+    img = pil_img.convert('RGBA')
+    arr = np.array(img, dtype=np.float32)
+    rgb = arr[:,:,:3] / 255.0
+    alpha = arr[:,:,3]
+    params = {m.group(1): float(m.group(2).replace('deg',''))
+              for m in re.finditer(r'([\w-]+)\(([^)]+)\)', filter_str)}
+    if 'grayscale' in params:
+        g = params['grayscale']
+        lum = 0.299*rgb[:,:,0] + 0.587*rgb[:,:,1] + 0.114*rgb[:,:,2]
+        gray = np.stack([lum,lum,lum], axis=2)
+        rgb = rgb*(1-g) + gray*g
+    if 'sepia' in params:
+        s = params['sepia']
+        m = np.array([[.393,.769,.189],[.349,.686,.168],[.272,.534,.131]])
+        flat = np.clip(rgb.reshape(-1,3) @ m.T, 0, 1)
+        rgb = rgb*(1-s) + flat.reshape(rgb.shape)*s
+    if 'hue-rotate' in params and params['hue-rotate'] != 0:
+        rgb = hue_rotate(rgb, params['hue-rotate'])
+    if 'saturate' in params:
+        s = params['saturate']
+        lum = 0.299*rgb[:,:,0] + 0.587*rgb[:,:,1] + 0.114*rgb[:,:,2]
+        gray = np.stack([lum,lum,lum], axis=2)
+        rgb = np.clip(gray + (rgb-gray)*s, 0, 1)
+    if 'brightness' in params:
+        rgb = np.clip(rgb * params['brightness'], 0, 1)
+    out = np.zeros_like(arr)
+    out[:,:,:3] = rgb * 255
+    out[:,:,3] = alpha
+    return Image.fromarray(out.astype(np.uint8), 'RGBA')
+
 def wrap_text(draw, text, font, max_width):
-    """한글 텍스트 줄 나누기"""
+    """텍스트 줄 나누기"""
     lines = []
-    for paragraph in text.split('\n'):
-        if not paragraph.strip():
+    for para in text.split('\n'):
+        if not para.strip():
             lines.append('')
             continue
         line = ''
-        for char in paragraph:
+        for char in para:
             test = line + char
             try:
                 w = draw.textlength(test, font=font)
@@ -74,40 +127,59 @@ def wrap_text(draw, text, font, max_width):
             lines.append(line)
     return lines
 
-def make_result_image(card_name, fortune_text, name, mbti):
+def make_result_image(card_name, card_emoji, card_filter, fortune_text, name, mbti):
     W, H = 540, 960
-    img = Image.new('RGB', (W, H), (10, 8, 18))
-    draw = ImageDraw.Draw(img)
-
     GOLD = (255, 215, 0)
     PINK = (232, 160, 168)
     WHITE = (240, 232, 240)
 
-    f_header = get_font(22)
-    f_card   = get_font(26)
+    img = Image.new('RGB', (W, H), (10, 8, 18))
+    draw = ImageDraw.Draw(img)
+
+    f_header = get_font(21)
+    f_card   = get_font(24)
     f_body   = get_font(17)
     f_small  = get_font(15)
 
     # 테두리
     draw.rectangle([12, 12, W-12, H-12], outline=GOLD, width=2)
 
-    # 헤더
-    draw.text((W//2, 45), "춘식이의 타로카페", font=f_header, fill=GOLD, anchor="mm")
-    draw.line([(30, 68), (W-30, 68)], fill=GOLD, width=1)
+    # 헤더 + 춘식이 이미지 + 카드 이름
+    with Pilmoji(img) as p:
+        p.text((W//2, 42), "🐱 춘식이의 타로카페 🐱", fill=GOLD, font=f_header, anchor="mm")
+    draw.line([(30, 65), (W-30, 65)], fill=GOLD, width=1)
+
+    # 춘식이 이미지 (카드별 색상 필터 적용)
+    try:
+        chunsik_data = base64.b64decode(chunsik_b64)
+        chunsik_pil = Image.open(io.BytesIO(chunsik_data)).convert('RGBA')
+        chunsik_pil = apply_css_filter(chunsik_pil, card_filter)
+        chunsik_pil = chunsik_pil.resize((110, 110), Image.LANCZOS)
+        img.paste(chunsik_pil, ((W-110)//2, 74), chunsik_pil)
+    except:
+        pass
+
+    # 카드 이모지
+    with Pilmoji(img) as p:
+        p.text((W//2, 200), card_emoji, fill=WHITE, font=get_font(34), anchor="mm")
+
+    draw.line([(30, 222), (W-30, 222)], fill=(100, 80, 100), width=1)
 
     # 카드 이름
-    draw.text((W//2, 105), f"[ {card_name} ]", font=f_card, fill=GOLD, anchor="mm")
-    draw.line([(30, 130), (W-30, 130)], fill=(100, 80, 100), width=1)
+    with Pilmoji(img) as p:
+        p.text((W//2, 248), f"✨ {card_name} ✨", fill=GOLD, font=f_card, anchor="mm")
+    draw.line([(30, 272), (W-30, 272)], fill=(100, 80, 100), width=1)
 
-    # 운세 텍스트
+    # 운세 텍스트 (이모지 포함)
     lines = wrap_text(draw, fortune_text, f_body, W - 80)
-    y = 150
-    for line in lines:
-        if line:
-            draw.text((40, y), line, font=f_body, fill=WHITE)
-            y += 28
-        else:
-            y += 12
+    y = 288
+    with Pilmoji(img) as p:
+        for line in lines:
+            if line:
+                p.text((40, y), line, fill=WHITE, font=f_body)
+                y += 28
+            else:
+                y += 10
 
     # 하단
     draw.line([(30, H-60), (W-30, H-60)], fill=GOLD, width=1)
@@ -423,7 +495,7 @@ if st.session_state.card_drawn and st.session_state.selected_card:
 
     st.divider()
 
-    img_bytes = make_result_image(card["name"], st.session_state.fortune_result, name, mbti)
+    img_bytes = make_result_image(card["name"], card["emoji"], card["filter"], st.session_state.fortune_result, name, mbti)
     col1, col2 = st.columns(2)
     col1.download_button(
         label="📱 이미지로 저장!",
