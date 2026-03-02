@@ -4,6 +4,8 @@ import base64
 import random
 import time
 import re
+import io
+from PIL import Image, ImageDraw, ImageFont
 from groq import Groq
 from dotenv import load_dotenv
 
@@ -33,6 +35,88 @@ def has_foreign_text(text):
     if re.search(r'[\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff]', cleaned):
         return True
     return False
+
+def get_font(size):
+    """한글 지원 폰트 찾기"""
+    paths = [
+        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/noto-cjk/NotoSansCJK-Regular.ttc",
+        "C:/Windows/Fonts/malgun.ttf",
+    ]
+    for path in paths:
+        try:
+            return ImageFont.truetype(path, size)
+        except:
+            pass
+    return ImageFont.load_default()
+
+def wrap_text(draw, text, font, max_width):
+    """한글 텍스트 줄 나누기"""
+    lines = []
+    for paragraph in text.split('\n'):
+        if not paragraph.strip():
+            lines.append('')
+            continue
+        line = ''
+        for char in paragraph:
+            test = line + char
+            try:
+                w = draw.textlength(test, font=font)
+            except:
+                w = len(test) * 17
+            if w > max_width and line:
+                lines.append(line)
+                line = char
+            else:
+                line = test
+        if line:
+            lines.append(line)
+    return lines
+
+def make_result_image(card_name, fortune_text, name, mbti):
+    W, H = 540, 960
+    img = Image.new('RGB', (W, H), (10, 8, 18))
+    draw = ImageDraw.Draw(img)
+
+    GOLD = (255, 215, 0)
+    PINK = (232, 160, 168)
+    WHITE = (240, 232, 240)
+
+    f_header = get_font(22)
+    f_card   = get_font(26)
+    f_body   = get_font(17)
+    f_small  = get_font(15)
+
+    # 테두리
+    draw.rectangle([12, 12, W-12, H-12], outline=GOLD, width=2)
+
+    # 헤더
+    draw.text((W//2, 45), "춘식이의 타로카페", font=f_header, fill=GOLD, anchor="mm")
+    draw.line([(30, 68), (W-30, 68)], fill=GOLD, width=1)
+
+    # 카드 이름
+    draw.text((W//2, 105), f"[ {card_name} ]", font=f_card, fill=GOLD, anchor="mm")
+    draw.line([(30, 130), (W-30, 130)], fill=(100, 80, 100), width=1)
+
+    # 운세 텍스트
+    lines = wrap_text(draw, fortune_text, f_body, W - 80)
+    y = 150
+    for line in lines:
+        if line:
+            draw.text((40, y), line, font=f_body, fill=WHITE)
+            y += 28
+        else:
+            y += 12
+
+    # 하단
+    draw.line([(30, H-60), (W-30, H-60)], fill=GOLD, width=1)
+    draw.text((W//2, H-35), f"{name}  ·  {mbti}", font=f_small, fill=PINK, anchor="mm")
+
+    buf = io.BytesIO()
+    img.save(buf, format='PNG')
+    buf.seek(0)
+    return buf.getvalue()
 
 # 카드마다 춘식이 색상 필터 다르게!
 TAROT_CARDS = [
@@ -339,8 +423,16 @@ if st.session_state.card_drawn and st.session_state.selected_card:
 
     st.divider()
 
-    _, col, _ = st.columns([1, 2, 1])
-    if col.button("🔄 다시 뽑기", use_container_width=True):
+    img_bytes = make_result_image(card["name"], st.session_state.fortune_result, name, mbti)
+    col1, col2 = st.columns(2)
+    col1.download_button(
+        label="📱 이미지로 저장!",
+        data=img_bytes,
+        file_name=f"타로_{card['name']}_{name}.png",
+        mime="image/png",
+        use_container_width=True
+    )
+    if col2.button("🔄 다시 뽑기", use_container_width=True):
         st.session_state.card_drawn = False
         st.session_state.selected_card = None
         st.session_state.fortune_result = None
