@@ -25,9 +25,14 @@ chunsik_b64 = get_base64_image("chunsik.png.png")
 MBTI_PATTERN = r'\b(INFJ|INFP|INTJ|INTP|ISFJ|ISFP|ISTJ|ISTP|ENFJ|ENFP|ENTJ|ENTP|ESFJ|ESFP|ESTJ|ESTP)\b'
 
 def has_foreign_text(text):
-    """MBTI 약어 제외하고 외국어(알파벳 3글자 이상) 있으면 True"""
+    """MBTI 약어 제외하고 외국어(알파벳 3글자 이상, 한자, 일본어) 있으면 True"""
     cleaned = re.sub(MBTI_PATTERN, '', text)
-    return bool(re.search(r'[a-zA-Z]{3,}', cleaned))
+    if re.search(r'[a-zA-Z]{3,}', cleaned):
+        return True
+    # 한자(CJK), 일본어 히라가나/가타카나 감지
+    if re.search(r'[\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff]', cleaned):
+        return True
+    return False
 
 # 카드마다 춘식이 색상 필터 다르게!
 TAROT_CARDS = [
@@ -300,10 +305,11 @@ if not st.session_state.card_drawn:
 
                 system_msg = (
                     "당신은 오직 한국어만으로 대화하는 타로 리더입니다. "
-                    "영어, 독일어, 프랑스어, 일본어, 한자, 스페인어 등 "
-                    "모든 외국어 단어는 절대 사용하면 안 됩니다. "
+                    "영어, 독일어, 프랑스어, 일본어, 중국어, 한자(漢字), 스페인어, 이탈리아어 등 "
+                    "모든 외국어 단어와 문자는 절대 사용하면 안 됩니다. "
+                    "한자(예: 愛, 運, 幸 등)도 절대 사용 금지입니다. "
                     "MBTI 약어(예: INFJ, ENFP)와 이모지만 예외로 허용됩니다. "
-                    "반드시 한국어 단어로만 작성하세요."
+                    "반드시 순수한 한국어 단어로만 작성하세요."
                 )
                 fortune_result = None
                 for _ in range(3):
