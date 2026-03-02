@@ -387,13 +387,14 @@ if st.session_state.card_drawn and st.session_state.selected_card:
     col1, col2 = st.columns(2)
     # 갤러리 저장 버튼
     if col1.button("📸 갤러리에 저장!", use_container_width=True):
-        st.session_state.gallery.append({
+        new_item = {
             "name": st.session_state.get("user_name", ""),
             "mbti": st.session_state.get("user_mbti", ""),
             "card": card["name"],
             "emoji": card["emoji"],
             "result": st.session_state.fortune_result
-        })
+        }
+        st.session_state.gallery = st.session_state.gallery + [new_item]
         st.session_state.just_saved = True
         st.rerun()
 
