@@ -193,6 +193,21 @@ css = """
     hr { border-color: rgba(255, 215, 0, 0.3) !important; }
     header[data-testid="stHeader"],
     [data-testid="stToolbar"] { display: none !important; }
+
+    .chunsik-card-img {
+        width: 80px;
+        height: 80px;
+        background: url("data:image/png;base64,__CHUNSIK__") center/contain no-repeat;
+        display: block;
+        margin: 0 auto;
+    }
+    .chunsik-card-back-img {
+        width: 90px;
+        height: 90px;
+        background: url("data:image/png;base64,__CHUNSIK__") center/contain no-repeat;
+        display: block;
+        margin: 0 auto;
+    }
 </style>
 """
 st.markdown(css.replace("__CHUNSIK__", chunsik_b64), unsafe_allow_html=True)
@@ -224,7 +239,7 @@ if not st.session_state.card_drawn:
     st.markdown(
         "<div class='card-back'>"
         "<div style='font-size:0.6rem; color:#FFD700; letter-spacing:5px; margin-bottom:0.8rem;'>✦ ✦ ✦ ✦ ✦</div>"
-        f"<img src='data:image/png;base64,{chunsik_b64}' style='width:90px; height:90px; object-fit:contain;'/>"
+        "<div class='chunsik-card-back-img'></div>"
         "<div style='font-size:0.55rem; color:#e8a0a8; margin-top:0.8rem; letter-spacing:2px;'>✨ 춘식이의 타로카페 ✨</div>"
         "<div style='font-size:0.6rem; color:#FFD700; letter-spacing:5px; margin-top:0.5rem;'>✦ ✦ ✦ ✦ ✦</div>"
         "</div>",
@@ -276,10 +291,11 @@ if not st.session_state.card_drawn:
                 response = client.chat.completions.create(
                     model="llama-3.3-70b-versatile",
                     messages=[
-                        {"role": "system", "content": "당신은 한국어만 사용하는 타로 리더입니다. 영어, 일본어, 한자, 중국어, 외국어를 절대 사용하지 않습니다. 모든 답변은 반드시 순수한 한국어로만 작성합니다."},
+                        {"role": "system", "content": "당신은 오직 한국어만으로 대화하는 타로 리더입니다. 영어 단어, 로마자 알파벳, 일본어, 한자 등 외국어는 절대로 사용하면 안 됩니다. MBTI 약어(예: INFJ, ENFP)와 이모지만 예외로 허용됩니다. 만약 외국어가 포함되면 실패한 답변입니다."},
                         {"role": "user", "content": prompt}
                     ],
-                    max_tokens=500
+                    max_tokens=500,
+                    temperature=0.7
                 )
                 st.session_state.fortune_result = response.choices[0].message.content
 
@@ -294,7 +310,7 @@ if st.session_state.card_drawn and st.session_state.selected_card:
     st.markdown(
         "<div class='tarot-card'>"
         "<div style='font-size:0.55rem; color:#FFD700; letter-spacing:4px; margin-bottom:0.6rem;'>✦ ✦ ✦ ✦ ✦</div>"
-        f"<img src='data:image/png;base64,{chunsik_b64}' style='width:80px; height:80px; object-fit:contain; filter:{card['filter']};'/>"
+        f"<div class='chunsik-card-img' style='filter:{card['filter']};'></div>"
         f"<div style='font-size:2rem; margin-top:0.3rem;'>{card['emoji']}</div>"
         "<div style='font-size:0.55rem; color:#FFD700; letter-spacing:4px; margin-top:0.6rem;'>✦ ✦ ✦ ✦ ✦</div>"
         "</div>",
