@@ -154,25 +154,26 @@ def make_result_image(card_name, card_emoji, card_filter, fortune_text, name, mb
         chunsik_data = base64.b64decode(chunsik_b64)
         chunsik_pil = Image.open(io.BytesIO(chunsik_data)).convert('RGBA')
         chunsik_pil = apply_css_filter(chunsik_pil, card_filter)
-        chunsik_pil = chunsik_pil.resize((110, 110), Image.LANCZOS)
-        img.paste(chunsik_pil, ((W-110)//2, 74), chunsik_pil)
+        chunsik_pil = chunsik_pil.resize((100, 100), Image.LANCZOS)
+        img.paste(chunsik_pil, ((W-100)//2, 74), chunsik_pil)
     except:
         pass
+    # 춘식이: y=74~174
 
-    # 카드 이모지
+    # 카드 이모지  (y=210 중앙 → top=193, 36px gap)
     with Pilmoji(img) as p:
-        p.text((W//2, 200), card_emoji, fill=WHITE, font=get_font(34), anchor="mm")
+        p.text((W//2, 210), card_emoji, fill=WHITE, font=get_font(32), anchor="mm")
 
-    draw.line([(30, 222), (W-30, 222)], fill=(100, 80, 100), width=1)
+    draw.line([(30, 235), (W-30, 235)], fill=(100, 80, 100), width=1)
 
-    # 카드 이름
+    # 카드 이름 (y=262 중앙)
     with Pilmoji(img) as p:
-        p.text((W//2, 248), f"✨ {card_name} ✨", fill=GOLD, font=f_card, anchor="mm")
-    draw.line([(30, 272), (W-30, 272)], fill=(100, 80, 100), width=1)
+        p.text((W//2, 262), f"✨ {card_name} ✨", fill=GOLD, font=f_card, anchor="mm")
+    draw.line([(30, 288), (W-30, 288)], fill=(100, 80, 100), width=1)
 
     # 운세 텍스트 (이모지 포함)
     lines = wrap_text(draw, fortune_text, f_body, W - 80)
-    y = 288
+    y = 305
     with Pilmoji(img) as p:
         for line in lines:
             if line:
