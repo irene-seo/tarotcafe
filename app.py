@@ -21,29 +21,30 @@ def get_base64_image(path):
 
 chunsik_b64 = get_base64_image("chunsik.png.png")
 
+# 카드마다 춘식이 색상 필터 다르게!
 TAROT_CARDS = [
-    {"name": "바보",        "emoji": "🃏",  "english": "The Fool"},
-    {"name": "마법사",      "emoji": "🪄",  "english": "The Magician"},
-    {"name": "여사제",      "emoji": "🌙",  "english": "The High Priestess"},
-    {"name": "여황제",      "emoji": "👸",  "english": "The Empress"},
-    {"name": "황제",        "emoji": "👑",  "english": "The Emperor"},
-    {"name": "교황",        "emoji": "🕊️", "english": "The Hierophant"},
-    {"name": "연인",        "emoji": "💞",  "english": "The Lovers"},
-    {"name": "전차",        "emoji": "🏆",  "english": "The Chariot"},
-    {"name": "힘",          "emoji": "🦁",  "english": "Strength"},
-    {"name": "은둔자",      "emoji": "🕯️", "english": "The Hermit"},
-    {"name": "운명의 바퀴", "emoji": "🎡",  "english": "Wheel of Fortune"},
-    {"name": "정의",        "emoji": "⚖️", "english": "Justice"},
-    {"name": "매달린 자",   "emoji": "🙃",  "english": "The Hanged Man"},
-    {"name": "변화",        "emoji": "🦋",  "english": "Death"},
-    {"name": "절제",        "emoji": "🌊",  "english": "Temperance"},
-    {"name": "악마",        "emoji": "🔥",  "english": "The Devil"},
-    {"name": "탑",          "emoji": "⚡",  "english": "The Tower"},
-    {"name": "별",          "emoji": "⭐",  "english": "The Star"},
-    {"name": "달",          "emoji": "🌕",  "english": "The Moon"},
-    {"name": "태양",        "emoji": "☀️", "english": "The Sun"},
-    {"name": "심판",        "emoji": "📯",  "english": "Judgement"},
-    {"name": "세계",        "emoji": "🌍",  "english": "The World"},
+    {"name": "바보",        "emoji": "🃏",  "filter": "hue-rotate(0deg) saturate(1)"},
+    {"name": "마법사",      "emoji": "🪄",  "filter": "hue-rotate(60deg) saturate(1.5)"},
+    {"name": "여사제",      "emoji": "🌙",  "filter": "hue-rotate(240deg) saturate(1.3) brightness(1.1)"},
+    {"name": "여황제",      "emoji": "👸",  "filter": "hue-rotate(320deg) saturate(1.8)"},
+    {"name": "황제",        "emoji": "👑",  "filter": "sepia(0.6) saturate(2) brightness(1.1)"},
+    {"name": "교황",        "emoji": "🕊️", "filter": "hue-rotate(180deg) saturate(1.2) brightness(1.2)"},
+    {"name": "연인",        "emoji": "💞",  "filter": "hue-rotate(300deg) saturate(2) brightness(1.1)"},
+    {"name": "전차",        "emoji": "🏆",  "filter": "hue-rotate(30deg) saturate(2)"},
+    {"name": "힘",          "emoji": "🦁",  "filter": "hue-rotate(15deg) saturate(2.5) brightness(0.9)"},
+    {"name": "은둔자",      "emoji": "🕯️", "filter": "grayscale(0.6) brightness(0.8)"},
+    {"name": "운명의 바퀴", "emoji": "🎡",  "filter": "hue-rotate(90deg) saturate(1.5)"},
+    {"name": "정의",        "emoji": "⚖️", "filter": "hue-rotate(210deg) saturate(1.4)"},
+    {"name": "매달린 자",   "emoji": "🙃",  "filter": "hue-rotate(150deg) saturate(1.3)"},
+    {"name": "변화",        "emoji": "🦋",  "filter": "hue-rotate(270deg) saturate(1.2) brightness(0.85)"},
+    {"name": "절제",        "emoji": "🌊",  "filter": "hue-rotate(190deg) brightness(1.2) saturate(1.3)"},
+    {"name": "악마",        "emoji": "🔥",  "filter": "hue-rotate(0deg) saturate(3) brightness(0.75)"},
+    {"name": "탑",          "emoji": "⚡",  "filter": "hue-rotate(20deg) saturate(2.5) brightness(0.85)"},
+    {"name": "별",          "emoji": "⭐",  "filter": "brightness(1.4) saturate(0.7)"},
+    {"name": "달",          "emoji": "🌕",  "filter": "hue-rotate(230deg) saturate(1.5) brightness(1.1)"},
+    {"name": "태양",        "emoji": "☀️", "filter": "sepia(0.7) brightness(1.3) saturate(1.8)"},
+    {"name": "심판",        "emoji": "📯",  "filter": "hue-rotate(280deg) saturate(1.4)"},
+    {"name": "세계",        "emoji": "🌍",  "filter": "hue-rotate(120deg) saturate(1.5)"},
 ]
 
 MBTI_LIST = [
@@ -53,7 +54,6 @@ MBTI_LIST = [
     "ESFJ", "ESFP", "ESTJ", "ESTP"
 ]
 
-# CSS에 춘식이 이미지 삽입 (replace 방식으로 f-string 충돌 방지)
 css = """
 <style>
     html, body, #root, .stApp,
@@ -146,10 +146,10 @@ css = """
         background: linear-gradient(135deg, #1a0818, #2d1030);
         border: 2px solid #FFD700;
         border-radius: 24px;
-        padding: 2.5rem 1rem;
+        padding: 1.5rem 1rem;
         text-align: center;
         margin: 1rem auto;
-        font-size: 5rem;
+        font-size: 3rem;
         max-width: 200px;
         box-shadow: 0 0 40px rgba(255, 215, 0, 0.25), 0 8px 32px rgba(0,0,0,0.6);
     }
@@ -171,6 +171,23 @@ css = """
         color: #f0e8f0;
         font-size: 1rem;
         line-height: 1.9;
+    }
+
+    .gallery-card {
+        background: rgba(25, 10, 25, 0.8);
+        border: 1px solid rgba(255, 215, 0, 0.3);
+        border-radius: 16px;
+        padding: 1rem;
+        margin: 0.7rem 0;
+        color: #f0e8f0;
+        font-size: 0.9rem;
+        line-height: 1.7;
+    }
+    .gallery-card-title {
+        color: #FFD700;
+        font-weight: bold;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
     }
 
     hr { border-color: rgba(255, 215, 0, 0.3) !important; }
@@ -199,6 +216,8 @@ st.divider()
 for key in ["card_drawn", "selected_card", "fortune_result"]:
     if key not in st.session_state:
         st.session_state[key] = False if key == "card_drawn" else None
+if "gallery" not in st.session_state:
+    st.session_state.gallery = []
 
 # 카드 뽑기 전
 if not st.session_state.card_drawn:
@@ -271,8 +290,14 @@ if not st.session_state.card_drawn:
 if st.session_state.card_drawn and st.session_state.selected_card:
     card = st.session_state.selected_card
 
+    # 카드마다 다른 색상의 춘식이!
     st.markdown(
-        "<div class='tarot-card'>" + card["emoji"] + "</div>",
+        "<div class='tarot-card'>"
+        "<div style='font-size:0.55rem; color:#FFD700; letter-spacing:4px; margin-bottom:0.6rem;'>✦ ✦ ✦ ✦ ✦</div>"
+        f"<img src='data:image/png;base64,{chunsik_b64}' style='width:80px; height:80px; object-fit:contain; filter:{card['filter']};'/>"
+        f"<div style='font-size:2rem; margin-top:0.3rem;'>{card['emoji']}</div>"
+        "<div style='font-size:0.55rem; color:#FFD700; letter-spacing:4px; margin-top:0.6rem;'>✦ ✦ ✦ ✦ ✦</div>"
+        "</div>",
         unsafe_allow_html=True
     )
     st.markdown(
@@ -285,9 +310,35 @@ if st.session_state.card_drawn and st.session_state.selected_card:
     )
 
     st.divider()
-    _, col2, _ = st.columns([1, 2, 1])
+
+    col1, col2 = st.columns(2)
+    # 갤러리 저장 버튼
+    if col1.button("📸 갤러리에 저장!", use_container_width=True):
+        st.session_state.gallery.append({
+            "name": name,
+            "mbti": mbti,
+            "card": card["name"],
+            "emoji": card["emoji"],
+            "result": st.session_state.fortune_result
+        })
+        st.success("갤러리에 저장됐어요! 🌟")
+
+    # 다시 뽑기 버튼
     if col2.button("🔄 다시 뽑기", use_container_width=True):
         st.session_state.card_drawn = False
         st.session_state.selected_card = None
         st.session_state.fortune_result = None
         st.rerun()
+
+# 갤러리 섹션
+if st.session_state.gallery:
+    st.divider()
+    st.subheader("✨ 오늘의 운세 갤러리")
+    for i, item in enumerate(reversed(st.session_state.gallery)):
+        st.markdown(
+            f"<div class='gallery-card'>"
+            f"<div class='gallery-card-title'>{item['emoji']} {item['name']} ({item['mbti']}) · {item['card']} 카드</div>"
+            f"{item['result']}"
+            f"</div>",
+            unsafe_allow_html=True
+        )
