@@ -256,7 +256,10 @@ if not st.session_state.card_drawn:
 
                 response = client.chat.completions.create(
                     model="llama-3.3-70b-versatile",
-                    messages=[{"role": "user", "content": prompt}],
+                    messages=[
+                        {"role": "system", "content": "당신은 한국어만 사용하는 타로 리더입니다. 영어, 일본어, 한자, 중국어, 외국어를 절대 사용하지 않습니다. 모든 답변은 반드시 순수한 한국어로만 작성합니다."},
+                        {"role": "user", "content": prompt}
+                    ],
                     max_tokens=500
                 )
                 st.session_state.fortune_result = response.choices[0].message.content
